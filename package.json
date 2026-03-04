@@ -1,0 +1,14 @@
+{
+  "name": "tiffinstash-admin-portal",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "install-all": "npm install && npm --prefix frontend install && npm --prefix backend install",
+    "dev": "concurrently \"npm --prefix frontend run dev\" \"npm --prefix backend run dev\"",
+    "db:seed": "npm --prefix backend run seed",
+    "build": "npm --prefix frontend run build && npm --prefix backend run build"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

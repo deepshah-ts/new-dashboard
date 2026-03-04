@@ -1,0 +1,8 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Global utilities for the design system */
+body {
+  @apply bg-white text-text font-sans;
+}

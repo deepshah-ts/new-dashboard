@@ -1,0 +1,247 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Store {
+  id            String         @id @default(uuid())
+  name          String
+  location      String?
+  active        Boolean        @default(true)
+  mealPlans     MealPlan[]
+  subscriptions Subscription[]
+}
+
+model Customer {
+  id            String         @id @default(uuid())
+  shopifyId     String?        @unique
+  name          String
+  email         String         @unique
+  phone         String?
+  address       String?
+  unitApt       String?
+  deliveryNotes String?
+  status        String         @default("ACTIVE") // ACTIVE, EXPIRED, ON_HOLD, NEW
+  subscriptions Subscription[]
+  orders        Order[]
+  payments      Payment[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model MealPlan {
+  id            String         @id @default(uuid())
+  name          String
+  storeId       String
+  store         Store          @relation(fields: [storeId], references: [id])
+  price         Float
+  status        String         @default("ACTIVE")
+  shopifyId     String?
+  tags          PlanTag[]
+  subscriptions Subscription[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+}
+
+model Tag {
+  id        String    @id @default(uuid())
+  name      String    @unique
+  plans     PlanTag[]
+  items     ItemTag[]
+}
+
+model PlanTag {
+  planId String
+  tagId  String
+  plan   MealPlan @relation(fields: [planId], references: [id])
+  tag    Tag      @relation(fields: [tagId], references: [id])
+  @@id([planId, tagId])
+}
+
+model ItemTag {
+  itemId String
+  tagId  String
+  item   MealItem @relation(fields: [itemId], references: [id])
+  tag    Tag      @relation(fields: [tagId], references: [id])
+  @@id([itemId, tagId])
+}
+
+model MealItem {
+  id        String    @id @default(uuid())
+  name      String
+  category  String
+  cost      Float
+  status    String    @default("ACTIVE")
+  tags      ItemTag[]
+}
+
+model DailyMenu {
+  id        String   @id @default(uuid())
+  date      DateTime
+  storeId   String
+  itemIds   String   // JSON array of item IDs
+  createdAt DateTime @default(now())
+}
+
+model Order {
+  id          String       @id @default(uuid())
+  orderNumber String       @unique
+  shopifyId   String?      @unique
+  customerId  String
+  customer    Customer     @relation(fields: [customerId], references: [id])
+  total       Float
+  status      String       // PENDING_ALL, READY_TO_APPROVE, REQUIRE_ATTENTION, UNDER_REVIEW, APPROVED, REJECTED, ON_HOLD
+  issue       String?
+  itemsData   String       // JSON representation of items
+  events      OrderEvent[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+}
+
+model OrderEvent {
+  id        String   @id @default(uuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id])
+  action    String
+  user      String
+  note      String?
+  createdAt DateTime @default(now())
+}
+
+model Subscription {
+  id               String              @id @default(uuid())
+  customerId       String
+  customer         Customer            @relation(fields: [customerId], references: [id])
+  planId           String
+  plan             MealPlan            @relation(fields: [planId], references: [id])
+  storeId          String
+  store            Store               @relation(fields: [storeId], references: [id])
+  status           String              // DRAFT, PENDING_PAYMENT, ON_HOLD, ACTIVE, PAUSED, EXPIRED, CANCELLED
+  startDate        DateTime
+  endDate          DateTime?
+  mealsRemaining   Int                 @default(0)
+  deliveryDays     String              // Mon,Tue,Wed,Thu,Fri
+  deliveryNotes    String?
+  packingNotes     String?
+  events           SubscriptionEvent[]
+  deliveries       Delivery[]
+  createdAt        DateTime            @default(now())
+  updatedAt        DateTime            @updatedAt
+}
+
+model SubscriptionEvent {
+  id             String       @id @default(uuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  action         String
+  user           String
+  reason         String?
+  createdAt      DateTime     @default(now())
+}
+
+model Payment {
+  id         String   @id @default(uuid())
+  customerId String
+  customer   Customer @relation(fields: [customerId], references: [id])
+  amount     Float
+  status     String   // PENDING, PAID, REFUNDED
+  method     String   // STRIPE, EMT, CASH
+  reference  String?
+  createdAt  DateTime @default(now())
+}
+
+model Delivery {
+  id             String       @id @default(uuid())
+  subscriptionId String
+  subscription   Subscription @relation(fields: [subscriptionId], references: [id])
+  date           DateTime
+  status         String       // PLANNED, ASSIGNED, IN_ROUTE, DELIVERED, FAILED, CANCELLED
+  routeId        String?
+  route          Route?       @relation(fields: [routeId], references: [id])
+  zoneId         String?
+  zone           Zone?        @relation(fields: [zoneId], references: [id])
+  driverId       String?
+  driver         Driver?      @relation(fields: [driverId], references: [id])
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+}
+
+model Route {
+  id         String     @id @default(uuid())
+  date       DateTime
+  zoneId     String
+  zone       Zone       @relation(fields: [zoneId], references: [id])
+  driverId   String?
+  driver     Driver?    @relation(fields: [driverId], references: [id])
+  status     String     // DRAFT, ACTIVE, COMPLETED
+  deliveries Delivery[]
+  createdAt  DateTime   @default(now())
+}
+
+model Driver {
+  id         String     @id @default(uuid())
+  name       String
+  phone      String?
+  vehicle    String?
+  status     String     @default("ACTIVE")
+  routes     Route[]
+  deliveries Delivery[]
+}
+
+model Zone {
+  id         String     @id @default(uuid())
+  name       String     @unique
+  postalCodes String    // Comma-separated
+  color      String?
+  routes     Route[]
+  deliveries Delivery[]
+}
+
+model Ticket {
+  id          String   @id @default(uuid())
+  customerId  String?
+  subject     String
+  status      String   // OPEN, IN_PROGRESS, RESOLVED, CLOSED
+  priority    String   // LOW, MEDIUM, HIGH
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Chat {
+  id         String   @id @default(uuid())
+  customerId String?
+  transcript String   // Text or JSON
+  date       DateTime @default(now())
+}
+
+model Call {
+  id         String   @id @default(uuid())
+  customerId String?
+  duration   Int      // seconds
+  notes      String?
+  date       DateTime @default(now())
+}
+
+model Upload {
+  id        String   @id @default(uuid())
+  filename  String
+  type      String   // CUSTOMERS, ORDERS, MEAL_PLANS
+  status    String   // PENDING, SUCCESS, FAILED
+  rows      Int      @default(0)
+  error     String?
+  createdAt DateTime @default(now())
+}
