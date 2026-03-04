@@ -2,12 +2,15 @@ import { Users, DollarSign, Package, Truck, CreditCard, Activity, PlusCircle, Sh
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 import { Button } from '../components/ui/button';
+import { API_BASE_URL } from '../config';
+
 
 export default function Dashboard() {
     const { data: stats, isLoading } = useQuery({
         queryKey: ['dashboardStats'],
         queryFn: async () => {
-            const res = await fetch('http://localhost:3000/api/dashboard/stats');
+            const res = await fetch(`${API_BASE_URL}/api/dashboard/stats`);
+
             if (!res.ok) throw new Error('Failed to fetch stats');
             return res.json();
         }

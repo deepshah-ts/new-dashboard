@@ -1,7 +1,9 @@
 import { useState } from 'react';
 import { Search, Filter, Download, Plus, MoreHorizontal } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
+import { API_BASE_URL } from '../config';
 import { Button } from '../components/ui/button';
+
 import { Input } from '../components/ui/input';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table';
 import { Badge } from '../components/ui/badge';
@@ -27,7 +29,8 @@ export default function Customers() {
     const { data: customersData = [], isLoading } = useQuery<CustomerData[]>({
         queryKey: ['customersData'],
         queryFn: async () => {
-            const res = await fetch('http://localhost:3000/api/customers');
+            const res = await fetch(`${API_BASE_URL}/api/customers`);
+
             if (!res.ok) throw new Error('Failed to fetch customers');
             return res.json();
         }
