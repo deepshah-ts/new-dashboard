@@ -11,17 +11,21 @@ server {
     # Use Google's DNS for resolving Cloud Run internal/external URLs
     resolver 8.8.8.8 valid=30s;
 
-    location /api/ {
+    location ^~ /api {
         proxy_pass ${BACKEND_URL};
         proxy_http_version 1.1;
         proxy_set_header Upgrade $http_upgrade;
         proxy_set_header Connection 'upgrade';
         proxy_set_header Host $proxy_host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
         proxy_ssl_server_name on;
+        proxy_ssl_protocols TLSv1.2 TLSv1.3;
         proxy_cache_bypass $http_upgrade;
     }
 
-    location /health {
+    location ^~ /health {
         proxy_pass ${BACKEND_URL};
         proxy_http_version 1.1;
         proxy_set_header Host $proxy_host;
