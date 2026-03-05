@@ -46,8 +46,9 @@ jobs:
             --region=us-east1 \
             --allow-unauthenticated \
             --port=8000 \
-
+            --labels=environment=production \
             --quiet
+
 
 
 
@@ -89,5 +90,5 @@ jobs:
             --region=us-east1 \
             --allow-unauthenticated \
             --port=3000 \
-
+            --labels=environment=production \
             --quiet
