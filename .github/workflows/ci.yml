@@ -1,0 +1,92 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  backend:
+    name: Build and Deploy Backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Backend
+        run: |
+          cd backend
+          docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/shopify-orders:backend .
+          docker push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/shopify-orders:backend
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_SA_KEY }}
+
+      - name: Deploy Backend to Cloud Run
+        id: deploy-backend
+        run: |
+          gcloud run deploy shopify-orders-backend \
+            --project pelagic-campus-484800-b3 \
+            --image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/shopify-orders:backend \
+            --platform managed \
+            --region us-east1 \
+            --allow-unauthenticated \
+            --port 8000 \
+            --quiet \
+            --format "value(status.url)" > backend_url.txt
+          echo "BACKEND_URL=$(cat backend_url.txt)" >> $GITHUB_ENV
+          echo "url=$(cat backend_url.txt)" >> $GITHUB_OUTPUT
+
+    outputs:
+      backend_url: ${{ steps.deploy-backend.outputs.url }}
+
+  frontend:
+    name: Build and Deploy Frontend
+    needs: backend
+    runs-on: ubuntu-latest
+    permissions:
+      contents: 'read'
+      id-token: 'write'
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and Push Frontend
+        run: |
+          cd frontend
+          docker build -t docker.io/${{ secrets.DOCKERHUB_USERNAME }}/shopify-orders:frontend .
+          docker push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/shopify-orders:frontend
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.GOOGLE_SA_KEY }}
+
+      - name: Deploy Frontend to Cloud Run
+        run: |
+          gcloud run deploy shopify-orders-frontend \
+            --project pelagic-campus-484800-b3 \
+            --image docker.io/${{ secrets.DOCKERHUB_USERNAME }}/shopify-orders:frontend \
+            --platform managed \
+            --region us-east1 \
+            --allow-unauthenticated \
+            --port 3000 \
+            --set-env-vars "BACKEND_URL=${{ needs.backend.outputs.backend_url }}" \
+            --quiet

@@ -10,17 +10,15 @@ COPY . .
 RUN npm run build
 
 # Production stage
-FROM node:20-slim
-
-WORKDIR /app
-
-# Install simple server
-RUN npm install -g serve
+FROM nginx:alpine
 
 # Copy built artifacts from builder
-COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# Copy nginx configuration template
+COPY nginx.conf.template /etc/nginx/templates/default.conf.template
 
 EXPOSE 3000
 
-# Start serving the dist folder on port 3000
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# The default entrypoint will run envsubst on templates
+CMD ["nginx", "-g", "daemon off;"]
