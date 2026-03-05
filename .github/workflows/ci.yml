@@ -45,7 +45,8 @@ jobs:
             --platform=managed \
             --region=us-east1 \
             --allow-unauthenticated \
-            --port=8080 \
+            --port=8000 \
+
             --quiet
 
 
@@ -87,5 +88,6 @@ jobs:
             --platform=managed \
             --region=us-east1 \
             --allow-unauthenticated \
-            --port=8080 \
+            --port=3000 \
+
             --quiet
