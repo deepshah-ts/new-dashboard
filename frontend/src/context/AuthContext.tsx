@@ -16,9 +16,15 @@ type AuthContextType = {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-    const [user, setUser] = useState<User | null>(null);
-    const [token, setToken] = useState<string | null>(null);
+    // TEMPORARY: Set a default user to bypass login
+    const [user, setUser] = useState<User | null>({
+        id: '1',
+        email: 'admin@tiffinstash.com',
+        name: 'System Admin'
+    });
+    const [token, setToken] = useState<string | null>('mock-token');
 
+    /* 
     useEffect(() => {
         const storedToken = localStorage.getItem('token');
         const storedUser = localStorage.getItem('user');
@@ -28,6 +34,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(JSON.parse(storedUser));
         }
     }, []);
+    */
 
     const login = (newToken: string, newUser: User) => {
         localStorage.setItem('token', newToken);
@@ -37,10 +44,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
 
     const logout = () => {
-        localStorage.removeItem('token');
-        localStorage.removeItem('user');
-        setToken(null);
-        setUser(null);
+        // TEMPORARY: Just redirect to root instead of clearing state
+        window.location.href = '/';
     };
 
     return (
