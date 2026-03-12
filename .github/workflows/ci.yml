@@ -43,6 +43,7 @@ jobs:
             --region us-east1 \
             --allow-unauthenticated \
             --port 8000 \
+            --set-env-vars "JWT_SECRET=${{ secrets.JWT_SECRET }},SHOPIFY_CLIENT_ID=${{ secrets.SHOPIFY_CLIENT_ID }},SHOPIFY_CLIENT_SECRET=${{ secrets.SHOPIFY_CLIENT_SECRET }},SHOPIFY_SHOP_URL=${{ secrets.SHOPIFY_SHOP_URL }}" \
             --quiet \
             --format "value(status.url)" > backend_url.txt
           echo "BACKEND_URL=$(cat backend_url.txt)" >> $GITHUB_ENV
