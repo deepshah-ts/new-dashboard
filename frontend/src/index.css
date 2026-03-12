@@ -4,5 +4,10 @@
 
 /* Global utilities for the design system */
 body {
-  @apply bg-white text-text font-sans;
+  @apply bg-white text-text font-sans antialiased;
+}
+
+/* Force light scrollbars and colors */
+:root {
+  color-scheme: light;
 }

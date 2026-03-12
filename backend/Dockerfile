@@ -1,44 +1,26 @@
-# Build stage
-FROM node:20-slim AS builder
+FROM python:3.11-slim
 
 WORKDIR /app
 
-# Install openssl for Prisma
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
 
-COPY package*.json ./
-COPY prisma ./prisma/
+# Copy requirements and install
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN npm install
-
+# Copy application code
 COPY . .
 
-# Generate Prisma client
-RUN npx prisma generate
-
-# Build TypeScript
-RUN npm run build
-
-# Production stage
-FROM node:20-slim
-
-WORKDIR /app
-
-# Install openssl for Prisma
-RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
-
-# Copy package files
-COPY --from=builder /app/package*.json ./
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/prisma ./prisma
-
 # Set environment variables
-ENV NODE_ENV=production
-ENV PORT=8000
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ENV PORT 8000
 
 EXPOSE 8000
 
-# Script to run migrations and start
-# We use npx prisma db push for SQLite in this demo setup
-CMD ["sh", "-c", "npx prisma db push && node dist/src/index.js"]
+# Run the application
+CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]

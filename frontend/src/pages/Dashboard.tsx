@@ -27,9 +27,9 @@ export default function Dashboard() {
 
     const quickActions = [
         { label: 'Add New Customer', icon: PlusCircle, color: 'bg-primary text-white' },
-        { label: 'Manage Deliveries', icon: Truck, color: 'bg-gray-100 hover:bg-gray-200' },
-        { label: 'View Daily Items', icon: Package, color: 'bg-gray-100 hover:bg-gray-200' },
-        { label: 'Shopify Orders', icon: ShoppingBag, color: 'bg-gray-100 hover:bg-gray-200' },
+        { label: 'Manage Deliveries', icon: Truck, color: 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700' },
+        { label: 'View Daily Items', icon: Package, color: 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700' },
+        { label: 'Shopify Orders', icon: ShoppingBag, color: 'bg-white hover:bg-gray-50 border-gray-200 text-gray-700' },
     ];
 
     const recentActivity = [

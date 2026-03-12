@@ -81,10 +81,10 @@ export default function Customers() {
                 <div className="flex items-center gap-3 w-full sm:w-auto flex-1">
                     <div className="relative w-full max-w-xs">
                         <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-gray-400" />
-                        <Input placeholder="Search name, email, phone..." className="pl-9 bg-gray-50 border-gray-200" />
+                        <Input placeholder="Search name, email, phone..." className="pl-9 bg-white border-gray-200 focus:ring-primary" />
                     </div>
                     <Select defaultValue="all">
-                        <SelectTrigger className="w-[140px] bg-gray-50 border-gray-200">
+                        <SelectTrigger className="w-[140px] bg-white border-gray-200 focus:ring-primary">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
                         <SelectContent>
@@ -105,7 +105,7 @@ export default function Customers() {
                 <div className="flex items-center gap-3 w-full sm:w-auto">
                     <span className="text-sm text-gray-500 whitespace-nowrap">Per page:</span>
                     <Select defaultValue="10">
-                        <SelectTrigger className="w-[70px] bg-gray-50 border-gray-200">
+                        <SelectTrigger className="w-[70px] bg-white border-gray-200 focus:ring-primary">
                             <SelectValue placeholder="10" />
                         </SelectTrigger>
                         <SelectContent>
@@ -136,7 +136,7 @@ export default function Customers() {
             {/* Data Table */}
             <div className="bg-white rounded-card shadow-sm border border-borderLight overflow-hidden flex-1">
                 <Table>
-                    <TableHeader className="bg-gray-50 border-b border-borderLight sticky top-0">
+                    <TableHeader className="bg-white border-b border-borderLight sticky top-0">
                         <TableRow className="hover:bg-transparent">
                             <TableHead className="w-[50px]">
                                 <Checkbox

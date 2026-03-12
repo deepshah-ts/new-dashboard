@@ -8,8 +8,8 @@ server {
         try_files $uri $uri/ /index.html;
     }
 
-    # Use Google's DNS for resolving Cloud Run URLs
-    resolver 8.8.8.8 valid=30s;
+    # Use Docker's internal DNS for local resolution
+    resolver 127.0.0.11 valid=30s;
 
     # Explicitly handle /api/ and /api (without slash)
     location /api/ {
