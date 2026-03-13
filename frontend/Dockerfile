@@ -20,7 +20,5 @@ RUN npm install -g serve
 # Copy built artifacts from builder
 COPY --from=builder /app/dist ./dist
 
-EXPOSE 3000
-
-# Serve the static files on port 3000
-CMD ["serve", "-s", "dist", "-l", "3000"]
+# Cloud Run injects $PORT — use a shell so $PORT is expanded at runtime
+CMD serve -s dist -l tcp://0.0.0.0:${PORT:-3000}
