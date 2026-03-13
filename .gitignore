@@ -37,3 +37,5 @@ yarn-error.log*
 # Compiled TypeScript
 dist/
 tsconfig.tsbuildinfo
+
+**/__pycache__/**

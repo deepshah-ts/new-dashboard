@@ -89,5 +89,4 @@ jobs:
             --region us-east1 \
             --allow-unauthenticated \
             --port 3000 \
-            --set-env-vars "BACKEND_URL=${{ needs.backend.outputs.backend_url }}" \
             --quiet
