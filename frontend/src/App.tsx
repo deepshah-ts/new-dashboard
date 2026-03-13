@@ -33,6 +33,7 @@ import Dashboard from './pages/Dashboard';
 import Upload from './pages/Upload';
 import Customers from './pages/Customers';
 import MealPlans from './pages/MealPlans';
+import MealPlansOld from './pages/MealPlansOld';
 import ShopifyOrders from './pages/ShopifyOrders';
 import DailyItems from './pages/DailyItems';
 import Connections from './pages/Connections';
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="upload" element={<Upload />} />
           <Route path="customers" element={<Customers />} />
           <Route path="meal-plans" element={<MealPlans />} />
+          <Route path="meal-plans-2" element={<MealPlansOld />} />
           <Route path="shopify-orders" element={<ShopifyOrders />} />
           <Route path="daily-items" element={<DailyItems />} />
           <Route path="connections" element={<Connections />} />

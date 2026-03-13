@@ -1,5 +1,5 @@
-import React, { useState, useMemo, useEffect } from 'react';
-import { Utensils, Tag, Plus, Filter, Edit, Trash2, MoreHorizontal, RefreshCw, ChevronDown, ChevronRight } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import { Utensils, Tag, Plus, MoreHorizontal, RefreshCw } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { Button } from '../components/ui/button';
 import { Input } from '../components/ui/input';
@@ -26,7 +26,7 @@ type MealPlan = {
     status: string;
 };
 
-export default function MealPlans() {
+export default function MealPlansOld() {
     const [activeTab, setActiveTab] = useState('plans');
     const [searchTerm, setSearchTerm] = useState('');
     const [cuisineFilter, setCuisineFilter] = useState('all');
@@ -41,8 +41,6 @@ export default function MealPlans() {
             return res.json();
         }
     });
-
-    const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
 
     const { cuisines, areas } = useMemo(() => {
         if (!plans) return { cuisines: [], areas: [] };
@@ -71,45 +69,15 @@ export default function MealPlans() {
             const matchesStatus = statusFilter === 'all' || plan.status.toLowerCase() === statusFilter.toLowerCase();
 
             return matchesSearch && matchesCuisine && matchesArea && matchesStatus;
-        });
+        }).sort((a, b) => a.name.localeCompare(b.name));
     }, [plans, searchTerm, cuisineFilter, areaFilter, statusFilter]);
-
-    const groupedPlans = useMemo(() => {
-        const groups: Record<string, MealPlan[]> = {};
-        filteredPlans.forEach(plan => {
-            const key = plan.name.trim();
-            if (!groups[key]) groups[key] = [];
-            groups[key].push(plan);
-        });
-        return Object.entries(groups).map(([name, variants]) => ({
-            name,
-            variants
-        })).sort((a, b) => a.name.localeCompare(b.name));
-    }, [filteredPlans]);
-
-    // Expand all by default when plans are loaded or when searching
-    useEffect(() => {
-        if (groupedPlans.length > 0) {
-            setExpandedProducts(new Set(groupedPlans.map(g => g.name)));
-        }
-    }, [groupedPlans]);
-
-    const toggleProduct = (name: string) => {
-        const next = new Set(expandedProducts);
-        if (next.has(name)) {
-            next.delete(name);
-        } else {
-            next.add(name);
-        }
-        setExpandedProducts(next);
-    };
 
     return (
         <div className="h-full flex flex-col space-y-6">
             <div className="flex justify-between items-start">
                 <div>
-                    <h1 className="text-2xl font-bold text-text">Menu & Plans</h1>
-                    <p className="text-gray-500 mt-1 text-sm">Manage meal packages synced directly from Shopify</p>
+                    <h1 className="text-2xl font-bold text-text">Menu & Plans (Old Layout)</h1>
+                    <p className="text-gray-500 mt-1 text-sm">Ungrouped list of all Shopify variants</p>
                 </div>
                 <div className="flex gap-2">
                     <Button
@@ -149,7 +117,7 @@ export default function MealPlans() {
 
                             <Select value={cuisineFilter} onValueChange={setCuisineFilter}>
                                 <SelectTrigger className="bg-white border-gray-200">
-                                    <SelectValue placeholder="Cuisine (Type)" />
+                                    <SelectValue placeholder="Cuisine" />
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="all">All Cuisines</SelectItem>
@@ -189,7 +157,7 @@ export default function MealPlans() {
                         <Table>
                             <TableHeader className="bg-white border-b border-borderLight">
                                 <TableRow className="hover:bg-transparent">
-                                    <TableHead className="font-semibold text-gray-600">Plan / SKU</TableHead>
+                                    <TableHead className="font-semibold text-gray-600">Plan / Variant / SKU</TableHead>
                                     <TableHead className="font-semibold text-gray-600">Type / Shift</TableHead>
                                     <TableHead className="text-right font-semibold text-gray-600">Price (CAD)</TableHead>
                                     <TableHead className="font-semibold text-gray-600">Areas Delivered</TableHead>
@@ -204,85 +172,58 @@ export default function MealPlans() {
                                             Fetching plans from Shopify...
                                         </TableCell>
                                     </TableRow>
-                                ) : groupedPlans.length === 0 ? (
+                                ) : filteredPlans.length === 0 ? (
                                     <TableRow>
                                         <TableCell colSpan={6} className="text-center py-12 text-gray-500">
-                                            No meal plans found matching your filters.
+                                            No meal plans found.
                                         </TableCell>
                                     </TableRow>
                                 ) : (
-                                    groupedPlans.map(({ name, variants }) => {
-                                        const isExpanded = expandedProducts.has(name);
-                                        return (
-                                            <React.Fragment key={name}>
-                                                {/* Product Header Row */}
-                                                <TableRow
-                                                    className="bg-gray-50/50 cursor-pointer hover:bg-gray-100/80 transition-colors border-l-4 border-l-primary/10"
-                                                    onClick={() => toggleProduct(name)}
-                                                >
-                                                    <TableCell colSpan={6} className="py-3">
-                                                        <div className="flex items-center gap-2">
-                                                            {isExpanded ? (
-                                                                <ChevronDown className="w-4 h-4 text-gray-400" />
-                                                            ) : (
-                                                                <ChevronRight className="w-4 h-4 text-gray-400" />
-                                                            )}
-                                                            <span className="font-bold text-text text-base">{name}</span>
-                                                            <Badge variant="outline" className="ml-2 bg-white text-[10px] text-gray-400 border-gray-200">
-                                                                {variants.length} {variants.length === 1 ? 'variant' : 'variants'}
-                                                            </Badge>
-                                                        </div>
-                                                    </TableCell>
-                                                </TableRow>
-
-                                                {/* Variant Rows */}
-                                                {isExpanded && variants.map((plan) => (
-                                                    <TableRow key={plan.id} className="hover:bg-gray-50/50 animate-in fade-in slide-in-from-top-1 duration-200">
-                                                        <TableCell className="pl-10">
-                                                            <div className="font-medium text-gray-700">{plan.variant}</div>
-                                                            <div className="text-[10px] text-gray-400 font-mono mt-0.5">{plan.sku || 'NO-SKU'}</div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <div className="text-sm text-gray-600">{plan.type}</div>
-                                                            <div className="flex gap-1 mt-1">
-                                                                {plan.is_lunch && <Badge className="bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-50 text-[10px] h-4">Lunch</Badge>}
-                                                                {plan.is_dinner && <Badge className="bg-purple-50 text-purple-600 border-purple-100 hover:bg-purple-50 text-[10px] h-4">Dinner</Badge>}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell className="text-right font-medium text-text">${plan.price.toFixed(2)}</TableCell>
-                                                        <TableCell>
-                                                            <div className="flex flex-wrap gap-1 max-w-[200px]">
-                                                                {plan.areas.map((area, i) => (
-                                                                    <Badge key={i} variant="outline" className="text-[10px] font-normal text-gray-500 bg-gray-50">
-                                                                        {area}
-                                                                    </Badge>
-                                                                ))}
-                                                                {plan.areas.length === 0 && <span className="text-xs text-gray-400 italic">Global</span>}
-                                                            </div>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <Badge variant="secondary" className={`border-0 capitalize ${plan.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
-                                                                {plan.status.toLowerCase()}
-                                                            </Badge>
-                                                        </TableCell>
-                                                        <TableCell>
-                                                            <DropdownMenu>
-                                                                <DropdownMenuTrigger asChild>
-                                                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                                                        <MoreHorizontal className="h-4 w-4 text-gray-400" />
-                                                                    </Button>
-                                                                </DropdownMenuTrigger>
-                                                                <DropdownMenuContent align="end">
-                                                                    <DropdownMenuItem className="cursor-pointer">View in Shopify</DropdownMenuItem>
-                                                                    <DropdownMenuItem className="cursor-pointer text-red-600">Archive Variant</DropdownMenuItem>
-                                                                </DropdownMenuContent>
-                                                            </DropdownMenu>
-                                                        </TableCell>
-                                                    </TableRow>
-                                                ))}
-                                            </React.Fragment>
-                                        );
-                                    })
+                                    filteredPlans.map((plan) => (
+                                        <TableRow key={plan.id} className="hover:bg-gray-50 transition-colors">
+                                            <TableCell>
+                                                <div className="font-bold text-text">{plan.name}</div>
+                                                <div className="text-sm font-medium text-gray-600 mt-0.5">{plan.variant}</div>
+                                                <div className="text-[10px] text-gray-400 font-mono mt-0.5">{plan.sku || 'NO-SKU'}</div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <div className="text-sm text-gray-600">{plan.type}</div>
+                                                <div className="flex gap-1 mt-1">
+                                                    {plan.is_lunch && <Badge className="bg-blue-50 text-blue-600 border-blue-100 hover:bg-blue-50 text-[10px] h-4">Lunch</Badge>}
+                                                    {plan.is_dinner && <Badge className="bg-purple-50 text-purple-600 border-purple-100 hover:bg-purple-50 text-[10px] h-4">Dinner</Badge>}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell className="text-right font-medium text-text">${plan.price.toFixed(2)}</TableCell>
+                                            <TableCell>
+                                                <div className="flex flex-wrap gap-1 max-w-[200px]">
+                                                    {plan.areas.map((area, i) => (
+                                                        <Badge key={i} variant="outline" className="text-[10px] font-normal text-gray-500 bg-gray-50">
+                                                            {area}
+                                                        </Badge>
+                                                    ))}
+                                                    {plan.areas.length === 0 && <span className="text-xs text-gray-400 italic">Global</span>}
+                                                </div>
+                                            </TableCell>
+                                            <TableCell>
+                                                <Badge variant="secondary" className={`border-0 capitalize ${plan.status === 'ACTIVE' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}`}>
+                                                    {plan.status.toLowerCase()}
+                                                </Badge>
+                                            </TableCell>
+                                            <TableCell>
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                                            <MoreHorizontal className="h-4 w-4 text-gray-400" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem className="cursor-pointer">View in Shopify</DropdownMenuItem>
+                                                        <DropdownMenuItem className="cursor-pointer text-red-600">Archive Plan</DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </TableCell>
+                                        </TableRow>
+                                    ))
                                 )}
                             </TableBody>
                         </Table>
@@ -293,7 +234,7 @@ export default function MealPlans() {
                     <div className="bg-white p-6 rounded-card shadow-sm border border-borderLight flex flex-col items-center justify-center h-[300px]">
                         <Utensils className="w-12 h-12 text-gray-300 mb-4" />
                         <h3 className="text-lg font-medium text-gray-900">Meal Items</h3>
-                        <p className="text-gray-500 mb-4 text-center max-w-sm">Individual food items and components that make up the meal plans. Sync from master list coming soon.</p>
+                        <p className="text-gray-500 mb-4 text-center max-w-sm">Individual food items and components that make up the meal plans.</p>
                         <Button variant="outline">Browse Master List</Button>
                     </div>
                 </TabsContent>

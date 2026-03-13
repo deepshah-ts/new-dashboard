@@ -6,6 +6,7 @@ const menuItems = [
     { name: 'Upload', path: '/upload', icon: UploadIcon },
     { name: 'Customers', path: '/customers', icon: UsersIcon },
     { name: 'Meal Plans', path: '/meal-plans', icon: CalendarIcon },
+    { name: 'Meal Plans (Old)', path: '/meal-plans-2', icon: CalendarIcon },
     { name: 'Shopify Orders', path: '/shopify-orders', icon: ShoppingCartIcon },
     { name: 'Daily Items', path: '/daily-items', icon: RefreshCcwIcon },
     { name: 'Connections', path: '/connections', icon: HelpCircleIcon },
