@@ -77,13 +77,13 @@ export default function MealPlans() {
     const groupedPlans = useMemo(() => {
         const groups: Record<string, MealPlan[]> = {};
         filteredPlans.forEach(plan => {
-            const key = plan.name.trim();
+            const key = (plan.vendor || 'Unknown Vendor').trim();
             if (!groups[key]) groups[key] = [];
             groups[key].push(plan);
         });
-        return Object.entries(groups).map(([name, variants]) => ({
-            name,
-            variants
+        return Object.entries(groups).map(([vendor, plans]) => ({
+            name: vendor,
+            variants: plans
         })).sort((a, b) => a.name.localeCompare(b.name));
     }, [filteredPlans]);
 
@@ -229,17 +229,18 @@ export default function MealPlans() {
                                                             )}
                                                             <span className="font-bold text-text text-base">{name}</span>
                                                             <Badge variant="outline" className="ml-2 bg-white text-[10px] text-gray-400 border-gray-200">
-                                                                {variants.length} {variants.length === 1 ? 'variant' : 'variants'}
+                                                                {variants.length} {variants.length === 1 ? 'plan' : 'plans'}
                                                             </Badge>
                                                         </div>
                                                     </TableCell>
                                                 </TableRow>
 
-                                                {/* Variant Rows */}
+                                                {/* Plan Rows under each Vendor */}
                                                 {isExpanded && variants.map((plan) => (
                                                     <TableRow key={plan.id} className="hover:bg-gray-50/50 animate-in fade-in slide-in-from-top-1 duration-200">
                                                         <TableCell className="pl-10">
-                                                            <div className="font-medium text-gray-700">{plan.variant}</div>
+                                                            <div className="font-medium text-gray-700">{plan.name}</div>
+                                                            <div className="text-sm text-gray-500 mt-0.5">{plan.variant}</div>
                                                             <div className="text-[10px] text-gray-400 font-mono mt-0.5">{plan.sku || 'NO-SKU'}</div>
                                                         </TableCell>
                                                         <TableCell>
