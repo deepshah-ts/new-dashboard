@@ -42,6 +42,17 @@ export default function MealPlans() {
         }
     });
 
+    const [isSyncing, setIsSyncing] = useState(false);
+    const syncShopify = async () => {
+        setIsSyncing(true);
+        try {
+            await fetch(`${API_BASE_URL}/api/meal-plans/refresh`, { method: 'POST' });
+            await refetch();
+        } finally {
+            setIsSyncing(false);
+        }
+    };
+
     const [expandedProducts, setExpandedProducts] = useState<Set<string>>(new Set());
 
     const { cuisines, areas } = useMemo(() => {
@@ -117,12 +128,12 @@ export default function MealPlans() {
                 <div className="flex gap-2">
                     <Button
                         variant="outline"
-                        onClick={() => refetch()}
-                        disabled={isFetching}
+                        onClick={syncShopify}
+                        disabled={isSyncing || isFetching}
                         className="rounded-card border-gray-200"
                     >
-                        <RefreshCw className={`w-4 h-4 mr-2 ${isFetching ? 'animate-spin' : ''}`} />
-                        Sync Shopify
+                        <RefreshCw className={`w-4 h-4 mr-2 ${(isSyncing || isFetching) ? 'animate-spin' : ''}`} />
+                        {isSyncing ? 'Syncing...' : 'Sync Shopify'}
                     </Button>
                     <Button className="bg-primary hover:bg-orange-700 text-white rounded-card">
                         <Plus className="w-4 h-4 mr-2" /> Add New {activeTab === 'plans' ? 'Plan' : activeTab === 'items' ? 'Item' : 'Tag'}
