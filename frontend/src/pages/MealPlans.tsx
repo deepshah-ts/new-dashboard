@@ -87,12 +87,15 @@ export default function MealPlans() {
         })).sort((a, b) => a.name.localeCompare(b.name));
     }, [filteredPlans]);
 
-    // Expand all by default when plans are loaded or when searching
+    // Auto-expand groups only when a search or filter is active; otherwise stay collapsed
     useEffect(() => {
-        if (groupedPlans.length > 0) {
+        const hasActiveFilter = searchTerm || cuisineFilter !== 'all' || areaFilter !== 'all' || statusFilter !== 'all';
+        if (hasActiveFilter && groupedPlans.length > 0) {
             setExpandedProducts(new Set(groupedPlans.map(g => g.name)));
+        } else if (!hasActiveFilter) {
+            setExpandedProducts(new Set());
         }
-    }, [groupedPlans]);
+    }, [groupedPlans, searchTerm, cuisineFilter, areaFilter, statusFilter]);
 
     const toggleProduct = (name: string) => {
         const next = new Set(expandedProducts);
